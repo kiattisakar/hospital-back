@@ -7,7 +7,7 @@ const { get_data, getWardData } = require('../services/getDataFromWardTable.js')
 const router = express.Router();
 
 router.post('/register', register);
-router.post('/login', login);
+router.post('/login', login); 
 router.get('/protected', authenticateJWT, (req, res) => {
     res.send('This is a protected route');
 });
