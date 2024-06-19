@@ -65,10 +65,10 @@ module.exports = {
 };
 
 
-test postman
-{
-    "orderdate": "2023-6-18",
-    "ptstatus": "AND maritalstatus = '0'",
-    "wardcode": "1"
-}
+// test postman
+// {
+//     "orderdate": "2023-6-18",
+//     "ptstatus": "AND maritalstatus = '0'",
+//     "wardcode": "1"
+// }
 
