@@ -1,3 +1,4 @@
+const axios = require('axios');
 const sql = require('mssql');
 const { pool, poolConnect } = require('../models/db');
 
@@ -7,6 +8,20 @@ async function second(req, res) {
     try {
         await poolConnect;
 
+        const orderdate = new Date().toISOString().split('T')[0]; // แปลงวันที่ปัจจุบันเป็น ISO date string
+
+
+        // ส่งคำขอไปยัง API แรกเพื่อดึงข้อมูล wardcode
+        const firstApiResponse = await axios.post('http://localhost:3000/api/first', { wardcode });
+        const firstApiData = firstApiResponse.data;
+
+        // ตรวจสอบว่า wardcode ถูกต้องหรือไม่
+        const wardExists = firstApiData.some(item => item.wardcode === wardcode);
+        if (!wardExists) {
+            return res.status(404).send('Ward not found in the first API data');
+        }
+
+        // Query ข้อมูลผู้ป่วยที่ admit ในฐานข้อมูล
         let query = `
             SELECT
                 ms_patientadmit.admitteddate,
@@ -26,7 +41,8 @@ async function second(req, res) {
             WHERE
                 dbo.ms_bedmove.status = 0
                 AND (dbo.ms_patientadmit.DCdatetime >= '${orderdate} 00:00:00' OR dbo.ms_patientadmit.DCdatetime IS NULL)
-                ${ptstatus}
+     AND dbo.ms_patientadmit.DCdatetime is null 
+
                 AND ms_ward.wardcode = '${wardcode}'
             GROUP BY
                 ms_patientadmit.admitteddate,
@@ -42,8 +58,10 @@ async function second(req, res) {
                 ms_patientadmit.admitteddate ASC
         `;
 
+        // ส่งคำสั่ง SQL ไปยังฐานข้อมูล
         const result = await pool.request().query(query);
 
+        // จัดรูปแบบข้อมูลที่ได้เพื่อส่งกลับ
         const finalResults = result.recordset.map(record => ({
             admitteddate: record.admitteddate,
             dischargeddate: record.dischargeddate,
@@ -53,6 +71,7 @@ async function second(req, res) {
             warddesc: record.warddesc
         }));
 
+        // ส่งข้อมูลกลับไปยังผู้เรียกใช้
         res.status(200).json(finalResults);
     } catch (err) {
         console.error('SQL error', err);
