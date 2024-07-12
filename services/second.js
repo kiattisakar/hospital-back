@@ -3,13 +3,12 @@ const sql = require('mssql');
 const { pool, poolConnect } = require('../models/db');
 
 async function second(req, res) {
-    const { orderdate, ptstatus, wardcode } = req.body;
-
+    const { ptstatus, wardcode } = req.body;
+    
     try {
         await poolConnect;
 
         const orderdate = new Date().toISOString().split('T')[0]; // แปลงวันที่ปัจจุบันเป็น ISO date string
-
 
         // ส่งคำขอไปยัง API แรกเพื่อดึงข้อมูล wardcode
         const firstApiResponse = await axios.post('http://localhost:3000/api/first', { wardcode });
@@ -30,7 +29,8 @@ async function second(req, res) {
                 ms_patientadmit.an,
                 CASE WHEN ms_patient.patientlanguage = 'TH' THEN ms_patient.patientnameTH ELSE ms_patient.patientnameEN END AS patientname,
                 ms_ward.wardcode,
-                ('[' + ms_ward.wardcode + '] ' + ms_ward.warddesc) AS warddesc
+                ('[' + ms_ward.wardcode + '] ' + ms_ward.warddesc) AS warddesc,
+                count(DISTINCT prescriptionno) AS SumPresc
             FROM
                 dbo.ms_patient
                 LEFT JOIN dbo.ms_patientadmit ON dbo.ms_patient.hn = dbo.ms_patientadmit.hn
@@ -38,11 +38,13 @@ async function second(req, res) {
                 LEFT JOIN dbo.ms_ward ON dbo.ms_bedmove.towardcode = dbo.ms_ward.wardcode
                 LEFT JOIN dbo.ms_patientDischarge ON dbo.ms_patientadmit.an = dbo.ms_patientDischarge.an 
                     AND dbo.ms_patientadmit.hn = dbo.ms_patientDischarge.hn
+                LEFT JOIN prescriptionheader ON dbo.ms_patientadmit.hn = prescriptionheader.hn
+                    AND dbo.ms_patientadmit.an = prescriptionheader.an
+                    AND prescriptionheader.ordercreatedate = '${orderdate}'
             WHERE
                 dbo.ms_bedmove.status = 0
                 AND (dbo.ms_patientadmit.DCdatetime >= '${orderdate} 00:00:00' OR dbo.ms_patientadmit.DCdatetime IS NULL)
-     AND dbo.ms_patientadmit.DCdatetime is null 
-
+                AND dbo.ms_patientadmit.DCdatetime IS NULL
                 AND ms_ward.wardcode = '${wardcode}'
             GROUP BY
                 ms_patientadmit.admitteddate,
@@ -68,6 +70,7 @@ async function second(req, res) {
             hn: record.hn,
             an: record.an,
             patientname: record.patientname,
+            SumPresc: record.SumPresc,
             warddesc: record.warddesc
         }));
 

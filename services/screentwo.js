@@ -1,9 +1,27 @@
 const sql = require('mssql');
 const dbConfig = require('../config/dbConfig'); // นำเข้าค่าการกำหนดค่าฐานข้อมูล
+const moment = require('moment');
 
 // ฟังก์ชันสำหรับการดึงข้อมูลจากฐานข้อมูล
 async function screentwo(req, res) {
     const { wardcode } = req.body; // รับค่า wardcode, startDate, และ endDate จาก request body
+
+    // Get current time
+    const now = moment();
+
+    // Define start and end dates
+    let startDate;
+    let endDate;
+
+    if (now.hour() > 8 || (now.hour() === 8 && now.minute() > 0)) {
+        // Current time is after 08:00:00
+        startDate = now.startOf('day').add(8, 'hours').format('YYYY-MM-DD HH:mm:ss');
+        endDate = now.startOf('day').add(1, 'days').add(7, 'hours').add(59, 'minutes').format('YYYY-MM-DD HH:mm:ss');
+    } else {
+        // Current time is before or equal to 08:00:00
+        startDate = now.startOf('day').subtract(1, 'days').add(8, 'hours').format('YYYY-MM-DD HH:mm:ss');
+        endDate = now.startOf('day').add(7, 'hours').add(59, 'minutes').format('YYYY-MM-DD HH:mm:ss');
+    }
 
     try {
         await sql.connect(dbConfig); // เชื่อมต่อกับฐานข้อมูลโดยใช้ค่าการกำหนดที่ได้รับ
@@ -32,8 +50,7 @@ async function screentwo(req, res) {
             AND dbo.prescription.ordertype <> '1'
             AND dbo.prescription.fromlocationname = 'ห้องยา IPD[001]'
             ${wardcode ? `AND dbo.prescription.wardcode = @wardcode` : ''}
-            AND prescription.ordercreatedate BETWEEN '2024-07-03 08:00' AND '2024-07-4 07:59:00'
-
+            AND dbo.prescription.ordercreatedate BETWEEN '${startDate}' AND '${endDate}'
         GROUP BY      
             CONVERT(VARCHAR(10), dbo.prescription.ordercreatedate, 103),     
             dbo.prescription.prescriptionno,     
@@ -89,6 +106,7 @@ async function screentwo(req, res) {
 module.exports = {
     screentwo
 };
+
 
 
 

@@ -11,7 +11,7 @@
 // };
 
 
-
+// ip โรงพยาบาลศูนย์ขอนแก่น
 module.exports = {
     user: 'sa',
     password: 'p@ssw0rd',
