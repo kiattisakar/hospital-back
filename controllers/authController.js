@@ -144,7 +144,7 @@ const register = async (req, res) => {
     res.status(500).send("Failed to register user");
   }
 };
-
+// back/controllers/authController.js
 const login = async (req, res) => {
   try {
     await poolConnect;
@@ -161,14 +161,15 @@ const login = async (req, res) => {
       "SELECT * FROM ms_users WHERE username = @username"
     );
     const user = result.recordset[0];
-
     if (user && password === user.password) {
-      const token = jwt.sign(
-        { userId: user.id, username: user.username },
-        JWT_SECRET,
-        { expiresIn: "12h" }
-      );
-      res.json({ message: "เข้าสู่ระบบสำเร็จ", token: token });
+      const payload = { id: user.userID, name: user.fullname };
+      const token = jwt.sign(payload, JWT_SECRET, { expiresIn: "12h" });
+
+      res.json({
+        message: "เข้าสู่ระบบสำเร็จ",
+        token: token,
+        user: payload,
+      });
     } else {
       res.status(401).send("ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง");
     }
@@ -176,6 +177,10 @@ const login = async (req, res) => {
     console.error(err);
     res.status(500).send("Failed to login");
   }
+};
+
+exports.getme = (req, res, next) => {
+  res.json(req.user);
 };
 
 module.exports = {

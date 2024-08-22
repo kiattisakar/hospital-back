@@ -132,7 +132,11 @@ const moment = require("moment");
 
 // ฟังก์ชันสำหรับการดึงข้อมูลจากฐานข้อมูล
 async function screentwo(req, res) {
-  const { wardcode } = req.body; // รับค่า wardcode, startDate, และ endDate จาก request body
+  const { wardcode, selectroom } = req.body; // รับค่า wardcode และ selectroom จาก request body
+
+  // ตรวจสอบค่าที่รับมาจาก Frontend
+  console.log("Received wardcode:", wardcode);
+  console.log("Received selectroom:", selectroom);
 
   // Get current time
   const now = moment();
@@ -192,7 +196,11 @@ async function screentwo(req, res) {
             dbo.prescription.genorderdatetime IS NULL
             AND ISNULL(dbo.prescription.frequencycode, '') NOT IN ('S', 'E', 'STAT')
             AND dbo.prescription.ordertype <> '1'
-            AND dbo.prescription.fromlocationname = 'ห้องยา IPD[001]'
+            ${
+              selectroom
+                ? `AND dbo.prescription.fromlocationname = @selectroom`
+                : ""
+            }
             ${wardcode ? `AND dbo.prescription.wardcode = @wardcode` : ""}
             AND dbo.prescription.ordercreatedate BETWEEN '${startDate}' AND '${endDate}'
         GROUP BY
@@ -214,6 +222,9 @@ async function screentwo(req, res) {
     const request = new sql.Request();
     if (wardcode) {
       request.input("wardcode", sql.VarChar, wardcode); // เพิ่มค่า wardcode เข้าไปใน request
+    }
+    if (selectroom) {
+      request.input("selectroom", sql.VarChar, selectroom); // เพิ่มค่า selectroom เข้าไปใน request
     }
 
     const result = await request.query(query);
