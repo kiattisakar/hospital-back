@@ -132,23 +132,25 @@ async function screen(req, res) {
 
     let query = `
       SELECT
-        dbo.prescription.wardcode,
-        dbo.prescription.wardname,
-        COUNT(*) AS counpres
-      FROM
-        dbo.prescription
-      WHERE
-        dbo.prescription.genorderdatetime Is NULL
-        AND dbo.prescription.ordercreatedate BETWEEN '${startDate}' AND '${endDate}'
-        AND ISNULL(dbo.prescription.frequencycode, '') NOT IN ('S', 'E', 'STAT')
-        AND dbo.prescription.ordertype <> '1'
-        AND dbo.prescription.fromlocationname = @select
-        AND CONVERT(DATE, ordercreatedate) = CONVERT(DATE, GETDATE())
-      GROUP BY
-        dbo.prescription.wardcode,
-        dbo.prescription.wardname
-      ORDER BY
-        CAST(dbo.prescription.wardcode AS INT) ASC;
+    dbo.prescription.wardcode,
+    dbo.prescription.wardname,
+    COUNT(DISTINCT dbo.prescription.prescriptionno) AS counpres
+FROM
+    dbo.prescription
+WHERE
+    dbo.prescription.genorderdatetime IS NULL
+    AND dbo.prescription.ordercreatedate BETWEEN '${startDate}' AND '${endDate}'
+    AND ISNULL(dbo.prescription.frequencycode, '') NOT IN ('S', 'E', 'STAT')
+    AND dbo.prescription.ordertype <> '1'
+    AND dbo.prescription.fromlocationname = @select
+    AND CONVERT(DATE, ordercreatedate) = CONVERT(DATE, GETDATE())
+GROUP BY
+    dbo.prescription.wardcode,
+    dbo.prescription.wardname
+ORDER BY
+    CAST(dbo.prescription.wardcode AS INT) ASC;
+
+
     `;
 
     const request = new sql.Request();
