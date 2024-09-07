@@ -11,7 +11,12 @@ const { screen } = require("../services/screen.js");
 const { screentwo } = require("../services/screentwo.js");
 const { screenthree } = require("../services/screenthree.js");
 const { profile } = require("../services/profile.js");
-const { ucHouse, stockHouse } = require("../services/ucHouse.js");
+const {
+  ucHouse,
+  stockHouse,
+  balancestockHouse,
+  filterStockByDate,
+} = require("../services/ucHouse.js");
 
 router.post("/register", register);
 router.post("/login", login);
@@ -29,4 +34,6 @@ router.post("/profile", profile);
 
 router.post("/ucHouse", ucHouse);
 router.post("/stockHouse", stockHouse);
+router.post("/balancestockHouse", balancestockHouse);
+router.post("/filterStockByDate", filterStockByDate);
 module.exports = router;
