@@ -170,6 +170,9 @@ async function stockHouse(req, res) {
 }
 
 async function balancestockHouse(req, res) {
+  const moment = require("moment");
+  const today = moment().format("YYYY-MM-DD");
+
   const { roomcode, orderitemcode } = req.body;
   console.log("Received roomcode:", roomcode);
   console.log("Received orderitemcode:", orderitemcode);
@@ -198,7 +201,7 @@ FROM ms_stockhistory su
 WHERE su.orderitemcode = @orderitemcode
 AND su.roomcode = @roomcode
 AND su.Note IN ('คลังยา','บริจาค','ยอดยก','ยายืม','ห้องผลิต')
-AND (CONVERT(DATE,su.ordercreatedate) BETWEEN '2023-10-01' AND '2024-09-05')
+AND (CONVERT(DATE,su.ordercreatedate) BETWEEN '2023-10-01' AND '${today}')
 GROUP BY
 CONVERT(VARCHAR,su.ordercreatedate,23),
 su.prescriptionno,
@@ -220,7 +223,7 @@ ISNULL(su.orderqty,0) AS orderqty
 FROM ms_stockusedrug su
 WHERE su.orderitemcode = @orderitemcode
 AND su.roomcode = @roomcode
-AND (CONVERT(DATE,su.confirmdatetime) BETWEEN '2023-10-01' AND '2024-09-05'))
+AND (CONVERT(DATE,su.confirmdatetime) BETWEEN '2023-10-01' AND '${today}'))
 ) AS s
 GROUP BY
 s.ordercreatedate,
@@ -242,7 +245,7 @@ FROM ms_stockhistory su
 WHERE su.orderitemcode = @orderitemcode
 AND su.roomcode = @roomcode
 AND su.Note NOT IN ('คลังยา','บริจาค','ยอดยก','ยายืม','ห้องผลิต')
-AND (CONVERT(DATE,su.ordercreatedate) BETWEEN '2023-10-01' AND '2024-09-05'))
+AND (CONVERT(DATE,su.ordercreatedate) BETWEEN '2023-10-01' AND '${today}'))
 ) AS t
 GROUP BY
 t.ordercreatedate,
@@ -275,7 +278,7 @@ FROM ms_stockhistory su
 WHERE su.orderitemcode = @orderitemcode
 AND su.roomcode = @roomcode
 AND su.Note IN ('คลังยา','บริจาค','ยอดยก','ยายืม','ห้องผลิต')
-AND (CONVERT(DATE,su.ordercreatedate) BETWEEN '2024-09-05' AND '2024-09-05')
+AND (CONVERT(DATE,su.ordercreatedate) BETWEEN '${today}' AND '${today}')
 GROUP BY
 CONVERT(VARCHAR,su.ordercreatedate,23),
 su.prescriptionno,
@@ -297,7 +300,7 @@ ISNULL(su.orderqty,0) AS orderqty
 FROM ms_stockusedrug su
 WHERE su.orderitemcode = @orderitemcode
 AND su.roomcode = @roomcode
-AND (CONVERT(DATE,su.confirmdatetime) BETWEEN '2024-09-05' AND '2024-09-05'))
+AND (CONVERT(DATE,su.confirmdatetime) BETWEEN '${today}' AND '${today}'))
 ) AS s
 GROUP BY
 s.ordercreatedate,
@@ -319,7 +322,7 @@ FROM ms_stockhistory su
 WHERE su.orderitemcode = @orderitemcode
 AND su.roomcode = @roomcode
 AND su.Note NOT IN ('คลังยา','บริจาค','ยอดยก','ยายืม','ห้องผลิต')
-AND (CONVERT(DATE,su.ordercreatedate) BETWEEN '2024-09-05' AND '2024-09-05'))
+AND (CONVERT(DATE,su.ordercreatedate) BETWEEN '${today}' AND '${today}'))
 ) AS t
 GROUP BY
 t.ordercreatedate,
@@ -388,9 +391,62 @@ async function filterStockByDate(req, res) {
     res.status(500).send("Internal Server Error");
   }
 }
+
+async function Exp(req, res) {
+  // รับค่าจาก request body
+  const { startdate, enddate, roomcode } = req.body;
+
+  const today = moment().format("YYYY-MM-DD");
+  const startDate = startdate || today;
+  const endDate = enddate || today;
+
+  try {
+    // เชื่อมต่อกับฐานข้อมูล
+    const pool = await sql.connect(dbConfig);
+
+    // Query SQL สำหรับดึงข้อมูล
+    const result = await pool
+      .request()
+      .input("startdate", sql.Date, startDate)
+      .input("enddate", sql.Date, endDate)
+      .input("roomcode", sql.NVarChar, roomcode).query(`
+        SELECT DISTINCT
+          sh.orderitemcode,
+          d.orderitemENname,
+          sh.LotNo,
+          CONVERT(VARCHAR,sh.Exp,23) As Exp,
+          sh.roomcode,
+          r.roomname
+        FROM ms_stockhistory sh
+        LEFT JOIN ms_drug d On sh.orderitemcode = d.orderitemcode
+        LEFT JOIN ms_room r On sh.roomcode = r.roomcode
+        WHERE (CONVERT(DATE,sh.Exp) BETWEEN @startdate AND @enddate)
+        AND sh.roomcode = @roomcode
+        ORDER BY CONVERT(VARCHAR,sh.Exp,23) ASC, r.roomname ASC;
+      `);
+
+    // จัดรูปแบบข้อมูลเพื่อส่งกลับ
+    const finalResults = result.recordset.map((record) => ({
+      orderitemcode: record.orderitemcode,
+      orderitemENname: record.orderitemENname,
+      LotNo: record.LotNo,
+      Exp: record.Exp,
+      roomcode: record.roomcode,
+      roomname: record.roomname,
+    }));
+
+    // ส่งผลลัพธ์ไปยัง frontend
+    res.status(200).json(finalResults);
+  } catch (err) {
+    console.error("SQL error", err);
+    res.status(500).send("Internal Server Error");
+  }
+}
+
 module.exports = {
   stockHouse,
   ucHouse,
   balancestockHouse,
   filterStockByDate,
+  Exp,
 };

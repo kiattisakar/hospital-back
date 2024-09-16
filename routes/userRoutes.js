@@ -16,6 +16,7 @@ const {
   stockHouse,
   balancestockHouse,
   filterStockByDate,
+  Exp,
 } = require("../services/ucHouse.js");
 
 router.post("/register", register);
@@ -36,4 +37,5 @@ router.post("/ucHouse", ucHouse);
 router.post("/stockHouse", stockHouse);
 router.post("/balancestockHouse", balancestockHouse);
 router.post("/filterStockByDate", filterStockByDate);
+router.post("/Exp", Exp);
 module.exports = router;
