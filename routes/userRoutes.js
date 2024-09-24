@@ -18,6 +18,7 @@ const {
   filterStockByDate,
   Exp,
 } = require("../services/ucHouse.js");
+const { test } = require("../services/dockertest.js");
 
 router.post("/register", register);
 router.post("/login", login);
@@ -38,4 +39,5 @@ router.post("/stockHouse", stockHouse);
 router.post("/balancestockHouse", balancestockHouse);
 router.post("/filterStockByDate", filterStockByDate);
 router.post("/Exp", Exp);
+router.get("/test", test);
 module.exports = router;
