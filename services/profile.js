@@ -147,7 +147,7 @@ async function profile(req, res) {
             med.ordercreatedate ASC
 
 
-            WHERE an =  "6746098" 
+            WHERE an =  '6746098' 
             AND dbo.prescription.ordercreatedate BETWEEN @startDate AND @endDate AND ordertype='0'
 
             Select TOP 10 ordertype 

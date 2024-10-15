@@ -78,6 +78,7 @@
 
 // back/controllers/authController.js
 const { sql, pool, poolConnect } = require("../models/db");
+
 const jwt = require("jsonwebtoken");
 const JWT_SECRET = "your_jwt_secret_key";
 
