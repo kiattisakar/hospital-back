@@ -1,6 +1,6 @@
 // /back/middlewares/authenticateJWT.js
 const jwt = require("jsonwebtoken");
-const JWT_SECRET = "your_jwt_secret_key";
+require("dotenv").config();
 
 const authenticateJWT = (req, res, next) => {
   const authHeader = req.header("Authorization");
@@ -10,7 +10,7 @@ const authenticateJWT = (req, res, next) => {
     return res.status(403).send("Access denied. No token provided.");
   }
 
-  jwt.verify(token, JWT_SECRET, (err, user) => {
+  jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
     if (err) {
       return res.status(403).send("Invalid token or token expired.");
     }

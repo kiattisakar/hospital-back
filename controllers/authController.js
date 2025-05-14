@@ -78,7 +78,7 @@
 
 // back/controllers/authController.js
 const { sql, pool, poolConnect } = require("../models/db");
-require("dotenv").config();
+
 const jwt = require("jsonwebtoken");
 
 const register = async (req, res) => {
@@ -163,6 +163,7 @@ const login = async (req, res) => {
     const user = result.recordset[0];
     if (user && password === user.password) {
       const payload = { id: user.userID, name: user.fullname };
+
       const token = jwt.sign(payload, process.env.JWT_SECRET, {
         expiresIn: "12h",
       });
