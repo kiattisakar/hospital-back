@@ -694,9 +694,11 @@ async function screenthree(req, res) {
             FROM
                 dbo.prescription
                 LEFT JOIN ms_drug ON dbo.prescription.orderitemcode = dbo.ms_drug.orderitemcode
-            WHERE dbo.prescription.prescriptionno = @prescriptionno 
+            
+                WHERE dbo.prescription.prescriptionno = @prescriptionno 
                 AND dbo.prescription.ordercreatedate BETWEEN @startDate AND @endDate
-                                ORDER BY  dbo.prescription.printstatus DESC,dbo.ms_drug.sendmachine
+            
+                ORDER BY  dbo.prescription.printstatus DESC,dbo.ms_drug.sendmachine
 
         `;
 

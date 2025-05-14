@@ -1,9 +1,11 @@
+// 4 ยา screen และยาส่งจัดยาแล้ว
+
 const sql = require("mssql");
-const dbConfig = require("../config/dbConfig"); // นำเข้าค่าการกำหนดค่าฐานข้อมูล
+const dbConfig = require("../../config/dbConfig"); // นำเข้าค่าการกำหนดค่าฐานข้อมูล
 const moment = require("moment");
 
 // ฟังก์ชันสำหรับการดึงข้อมูลจากฐานข้อมูล
-async function screentwo(req, res) {
+async function screenStat_Finish_2(req, res) {
   const { wardcode, selectroom } = req.body; // รับค่า wardcode และ selectroom จาก request body
 
   // ตรวจสอบค่าที่รับมาจาก Frontend
@@ -64,17 +66,15 @@ async function screentwo(req, res) {
             dbo.prescription
         LEFT JOIN dbo.ms_ward ON dbo.prescription.wardcode = dbo.ms_ward.wardcode
         LEFT JOIN dbo.ms_drug ON dbo.prescription.orderitemcode = dbo.ms_drug.orderitemcode
-        WHERE
-            dbo.prescription.genorderdatetime IS NULL
-            AND ISNULL(dbo.prescription.frequencycode, '') NOT IN ('S', 'E', 'STAT')
-            AND dbo.prescription.ordertype <> '1'
-            ${
-              selectroom
-                ? `AND dbo.prescription.fromlocationname = @selectroom`
-                : ""
-            }
-            ${wardcode ? `AND dbo.prescription.wardcode = @wardcode` : ""}
-            AND dbo.prescription.ordercreatedate BETWEEN '${startDate}' AND '${endDate}'
+        
+        WHERE  
+        dbo.ms_ward.wardstatus = 'Y' 
+        AND dbo.prescription.genorderdatetime IS NOT NULL 
+        And dbo.prescription.wardcode = @wardcode 
+        And ISNULL(dbo.prescription.frequencycode,'') NOT In ('S','E','STAT')  
+        And dbo.prescription.ordertype <> '1' AND dbo.prescription.fromlocationname = 'ห้องยา IPD[001]'
+        AND prescription.ordercreatedate BETWEEN '${startDate}' AND '${endDate}'
+
         GROUP BY
             CONVERT(VARCHAR(10), dbo.prescription.ordercreatedate, 103),
             dbo.prescription.prescriptionno,
@@ -101,26 +101,28 @@ async function screentwo(req, res) {
 
     const result = await request.query(query);
 
-    const finalResults = result.recordset.map((record) => {
-      const status = record.status ? "Screen แล้ว" : "รอ Screen"; // if else โง่ๆ
+    const finalResults = result.recordset
+      .filter((record) => record.genorderdatetime) // แสดงเฉพาะที่มีค่า genorderdatetime
+      .map((record) => {
+        const status = record.genorderdatetime ? "Screen แล้ว" : "รอ Screen"; // กำหนดสถานะตามค่า genorderdatetime
 
-      return {
-        takedate: record.takedate,
-        ordertype: record.ordertype,
-        prescriptionno: record.prescriptionno,
-        hn: record.hn,
-        an: record.an,
-        patientname: record.patientname,
-        wardcode: record.wardcode,
-        wardname: record.wardname,
-        bedcode: record.bedcode,
-        prioritycode: record.prioritycode,
-        genorderdatetime: record.genorderdatetime,
-        fromlocationname: record.fromlocationname,
-        status: status, // เพิ่มค่า gen ที่ตรวจสอบจาก genorderdatetime
-        orderitemcode: record.orderitemcode, // เพื่อให้ sc
-      };
-    });
+        return {
+          takedate: record.takedate,
+          ordertype: record.ordertype,
+          prescriptionno: record.prescriptionno,
+          hn: record.hn,
+          an: record.an,
+          patientname: record.patientname,
+          wardcode: record.wardcode,
+          wardname: record.wardname,
+          bedcode: record.bedcode,
+          prioritycode: record.prioritycode,
+          genorderdatetime: record.genorderdatetime,
+          fromlocationname: record.fromlocationname,
+          status: status, // เพิ่มค่า gen ที่ตรวจสอบจาก genorderdatetime
+          orderitemcode: record.orderitemcode, // เพื่อให้แสดงค่า orderitemcode
+        };
+      });
 
     res.status(200).json(finalResults);
   } catch (err) {
@@ -132,5 +134,5 @@ async function screentwo(req, res) {
 }
 
 module.exports = {
-  screentwo,
+  screenStat_Finish_2,
 };

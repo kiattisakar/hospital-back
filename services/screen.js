@@ -142,7 +142,7 @@ WHERE
     AND dbo.prescription.ordercreatedate BETWEEN '${startDate}' AND '${endDate}'
     AND ISNULL(dbo.prescription.frequencycode, '') NOT IN ('S', 'E', 'STAT')
     AND dbo.prescription.ordertype <> '1'
-    AND dbo.prescription.fromlocationname = @select
+    AND dbo.prescription.fromlocationname = 'ห้องยา IPD[001]'
     AND CONVERT(DATE, ordercreatedate) = CONVERT(DATE, GETDATE())
 GROUP BY
     dbo.prescription.wardcode,

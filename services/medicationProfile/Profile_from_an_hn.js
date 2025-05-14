@@ -1,7 +1,7 @@
 // controllers/patientLabController.js
 // const { pool, poolConnect, sql } = require("../../models/db");
 
-// const medicationProfile_database_144 = async (req, res) => {
+// const Profile_database_144 = async (req, res) => {
 //   await poolConnect; // รอจนกระทั่งการเชื่อมต่อสำเร็จ
 
 //   try {
@@ -18,12 +18,12 @@
 // };
 
 // module.exports = {
-//   medicationProfile_database_144,
+//   Profile_database_144,
 // };
 
 const { pool, poolConnect, sql } = require("../../models/db");
 
-const medicationProfile_database_144 = async (req, res) => {
+const Profile_private_an = async (req, res) => {
   await poolConnect; // รอจนกระทั่งการเชื่อมต่อสำเร็จ
   const { an } = req.body; // รับค่า an จาก body ของ request
 
@@ -42,6 +42,26 @@ const medicationProfile_database_144 = async (req, res) => {
   }
 };
 
+const Profile_private_hn = async (req, res) => {
+  await poolConnect; // รอจนกระทั่งการเชื่อมต่อสำเร็จ
+  const { hn } = req.body; // รับค่า an จาก body ของ request
+
+  try {
+    const request = pool.request(); // สร้างคำขอ SQL
+    request.input("hn", sql.VarChar, hn); // กำหนดค่า an ให้กับพารามิเตอร์ @an
+
+    const result = await request.query(
+      "SELECT * FROM ms_patient WHERE hn = @hn"
+    );
+
+    res.status(200).json(result.recordset); // ส่งผลลัพธ์กลับไปยังผู้เรียกใช้ในรูปแบบ JSON
+  } catch (err) {
+    console.error("SQL error", err); // แสดงข้อผิดพลาดใน console
+    res.status(500).send("Server error"); // ส่งข้อผิดพลาดกลับไปยังผู้เรียกใช้
+  }
+};
+
 module.exports = {
-  medicationProfile_database_144,
+  Profile_private_an,
+  Profile_private_hn,
 };
