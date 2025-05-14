@@ -78,9 +78,8 @@
 
 // back/controllers/authController.js
 const { sql, pool, poolConnect } = require("../models/db");
-
+require("dotenv").config();
 const jwt = require("jsonwebtoken");
-const JWT_SECRET = "your_jwt_secret_key";
 
 const register = async (req, res) => {
   try {
@@ -164,7 +163,9 @@ const login = async (req, res) => {
     const user = result.recordset[0];
     if (user && password === user.password) {
       const payload = { id: user.userID, name: user.fullname };
-      const token = jwt.sign(payload, JWT_SECRET, { expiresIn: "12h" });
+      const token = jwt.sign(payload, process.env.JWT_SECRET, {
+        expiresIn: "12h",
+      });
 
       res.json({
         message: "เข้าสู่ระบบสำเร็จ",
