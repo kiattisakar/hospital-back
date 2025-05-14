@@ -1,11 +1,11 @@
 // config/dbConfig.js
-
+require("dotenv").config();
 // slqserver
 module.exports = {
-  user: "sa", // ชื่อผู้ใช้
-  password: "p@ssw0rd", // รหัสผ่าน
-  server: "192.168.0.144", // ที่อยู่ของเซิร์ฟเวอร์ SQL Server
-  database: "Unitdose", // ชื่อฐานข้อมูล
+  user: process.env.USER_SUPREAM, // ชื่อผู้ใช้
+  password: process.env.PASSWORD_SUPREAM, // รหัสผ่าน
+  server: process.env.SERVER_SUPREAM, // ที่อยู่ของเซิร์ฟเวอร์ SQL Server
+  database: process.env.DATABASE_SUPREAM, // ชื่อฐานข้อมูล
   options: {
     encrypt: true, // ต้องการเข้ารหัสข้อมูล
     trustServerCertificate: true, // ยอมรับใบรับรองจากเซิร์ฟเวอร์

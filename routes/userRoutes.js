@@ -48,7 +48,7 @@ const { mainMed } = require("../services/settingMed/mainMed.js");
 const { grouplocation } = require("../services/settingMed/grouplocation.js");
 const { howuse } = require("../services/settingMed/howuse.js");
 const { f5createorder } = require("../services/funtion/f5createorder.js");
-const { drugallergy } = require("../services/drugallergy.js");
+// const { drugallergy } = require("../services/drugallergy.js");
 const { btnsearch } = require("../services/btnsearch.js");
 const {
   screen_TakeHome_1,
@@ -131,7 +131,7 @@ router.post("/grouplocation", grouplocation);
 // router.post("/howuse", howuse);
 router.post("/f5createorder", f5createorder);
 
-router.post("/drugallergy", drugallergy); //ป็อปอัพแจ้งเตือนแพ้ยา
+// router.post("/drugallergy", drugallergy); //ป็อปอัพแจ้งเตือนแพ้ยา
 
 // const { pool, poolConnect, sql } = require("../models/db"); // นำเข้า pool และ poolConnect
 // router.get("/private-lab-result", async (req, res) => {

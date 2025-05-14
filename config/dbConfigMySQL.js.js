@@ -1,10 +1,10 @@
 // config / dbConfigMySQL.js;
-
+require("dotenv").config();
 module.exports = {
-  host: "192.168.0.218", // หรือที่อยู่ IP ของเซิร์ฟเวอร์ MySQL
-  user: "staff@pharmacy",
-  password: "pharmacyKkh2018",
-  database: "app_pharmacy", // ระบุชื่อฐานข้อมูลที่ต้องการใช้
+  host: process.env.SERVER_HOSPITALKKH, // หรือที่อยู่ IP ของเซิร์ฟเวอร์ MySQL
+  user: process.env.USER_HOSPITALKKH,
+  password: process.env.PASSWORD_HOSPITALKKH,
+  database: process.env.DATABASE_HOSPITALKKH, // ระบุชื่อฐานข้อมูลที่ต้องการใช้
   port: 3306, // หรือพอร์ตที่คุณต้องการใช้
   waitForConnections: true,
   connectionLimit: 10, // กำหนดจำนวน connection สูงสุดที่ต้องการ
