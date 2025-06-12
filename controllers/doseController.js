@@ -29,10 +29,44 @@ exports.getSearch = async (req, res) => {
       }
       rs = await doseModel.getSearch(condition);
     }
-
     res.status(200).json(rs);
   } catch (err) {
     console.error(`error : ${err}`);
     res.status(500).send(`error : ${err}`);
+  }
+};
+
+exports.getDiluentname = async (req, res) => {
+  const { txtdiluentname, diluentnameID } = req.query;
+  try {
+    let condition = "";
+    let rs = "";
+    condition = `Where dbo.ms_diluent.orderitemcode ='${diluentnameID}' AND dbo.ms_drug.unused = 'Y'`;
+    rs = await doseModel.getDiluentItem(condition);
+
+    if (!rs || rs.length <= 0) {
+      const keyword = txtdiluentname.replaceAll("%", ""); // ลบ % ทั้งหมดก่อน
+
+      condition =
+        " WHERE (ms_drug.orderitemcode LIKE '" +
+        keyword +
+        "%' AND dbo.ms_drug.diluentstatus = 'Y' AND dbo.ms_drug.unused = 'Y')";
+
+      condition +=
+        " OR (dbo.ms_diluent.diluentorderitemcode LIKE '" +
+        keyword +
+        "%' AND dbo.ms_drug.unused = 'Y')";
+
+      condition +=
+        " OR (dbo.ms_diluent.diluentname LIKE '" +
+        keyword +
+        "%' AND dbo.ms_drug.unused = 'Y')";
+
+      rs = await doseModel.getDiluentname(condition);
+    }
+
+    res.status(200).json(rs);
+  } catch (err) {
+    res.status(400).json(`err : ${err}`);
   }
 };

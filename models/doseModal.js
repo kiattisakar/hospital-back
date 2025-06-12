@@ -114,8 +114,98 @@ LEFT JOIN Unitdose.dbo.ms_GPtoTP gp2tp ON gp2tp.TPID = tp2tpu.TPID`;
   try {
     await sql.connect(dbConfig);
     const request = new sql.Request();
-    console.log(q + condition);
     const rs = await request.query(q + condition);
+    return rs;
+  } catch (err) {
+    console.error(err);
+  }
+};
+
+exports.getDiluentname = async (condition) => {
+  const q = `
+Select 
+ '' AS orderitemcode, 
+ dbo.ms_drug.orderitemcode, 
+ CASE WHEN dbo.ms_diluent.diluentorderitemcode Is NULL THen 
+ dbo.ms_drug.orderitemcode 
+ Else 
+ dbo.ms_diluent.diluentorderitemcode END as diluentorderitemcode, 
+ CASE WHEN dbo.ms_diluent.diluentname Is NULL THen 
+ dbo.ms_drug.orderitemTHname 
+ Else 
+ dbo.ms_diluent.diluentname End As diluentname, 
+ '' As diluentstatus, 
+ Case WHEN dbo.ms_diluent.vol Is NULL THen 
+ dbo.ms_drug.capacity 
+ Else 
+ dbo.ms_diluent.vol End As vol, 
+ '' AS seq, 
+ Convert(float, ISNULL(dbo.ms_drug.cost, 0)) As cost, 
+ Convert(float, ISNULL(dbo.ms_drug.IPDprice, 0)) As IPDprice, 
+ Convert(float, ISNULL(dbo.ms_drug.OPDprice, 0)) As OPDprice, 
+ ISNULL(dbo.ms_drug_tmt.tmtcode,'0') AS tmtcode  
+ FROM 
+ dbo.ms_drug 
+ Left Join dbo.ms_diluent ON dbo.ms_diluent.diluentorderitemcode = dbo.ms_drug.orderitemcode 
+ Left Join dbo.ms_drug_tmt On dbo.ms_drug.orderitemcode = dbo.ms_drug_tmt.orderitemcode 
+ ${condition} 
+ GROUP BY 
+ dbo.ms_drug.orderitemcode, 
+ dbo.ms_drug.orderitemTHname, 
+ dbo.ms_drug.capacity, 
+ dbo.ms_diluent.diluentorderitemcode, 
+ dbo.ms_diluent.diluentname, 
+ dbo.ms_diluent.vol, 
+ dbo.ms_drug.cost, 
+ dbo.ms_drug.IPDprice, 
+ dbo.ms_drug.OPDprice, 
+ dbo.ms_drug_tmt.tmtcode`;
+  try {
+    await sql.connect(dbConfig);
+    const request = new sql.Request();
+    
+    const rs = await request.query(q );
+    return rs;
+  } catch (err) {
+    console.error(err);
+  }
+};
+
+exports.getDiluentItem = async (Id) => {
+  const q = `
+   Select   
+          dbo.ms_diluent.orderitemcode,    
+          dbo.ms_diluent.diluentorderitemcode,    
+          dbo.ms_diluent.diluentname,    
+          dbo.ms_drug.diluentstatus,    
+          convert(float,dbo.ms_diluent.vol) As vol,    
+          dbo.ms_diluent.seq,   
+          convert(float,ISNULL(dbo.ms_drug.cost,0)) As cost,   
+          convert(float,ISNULL(dbo.ms_drug.IPDprice,0)) As IPDprice,    
+          convert(float,ISNULL(dbo.ms_drug.OPDprice,0)) As OPDprice,     
+          ISNULL(dbo.ms_drug_tmt.tmtcode,'0') AS tmtcode    
+          FROM   
+          dbo.ms_diluent   
+          Left JOIN dbo.ms_drug On dbo.ms_diluent.diluentorderitemcode = dbo.ms_drug.orderitemcode   
+          Left Join dbo.ms_drug_tmt On dbo.ms_drug.orderitemcode = dbo.ms_drug_tmt.orderitemcode   
+           Where dbo.ms_diluent.orderitemcode ='${Id}' AND dbo.ms_drug.unused = 'Y'
+          GROUP BY   
+          dbo.ms_diluent.orderitemcode,    
+          dbo.ms_diluent.diluentorderitemcode,    
+          dbo.ms_diluent.diluentname,    
+          dbo.ms_drug.diluentstatus,    
+          dbo.ms_diluent.vol,    
+          dbo.ms_diluent.seq,    
+          dbo.ms_drug.cost,    
+          dbo.ms_drug.IPDprice,    
+          dbo.ms_drug.OPDprice,     
+          dbo.ms_drug_tmt.tmtcode    
+          ORDER BY dbo.ms_diluent.seq `;
+  try {
+    await sql.connect(dbConfig);
+    const request = new sql.Request();
+  
+    const rs = await request.query(q );
     return rs;
   } catch (err) {
     console.error(err);
