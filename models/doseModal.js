@@ -163,8 +163,8 @@ Select
   try {
     await sql.connect(dbConfig);
     const request = new sql.Request();
-    
-    const rs = await request.query(q );
+
+    const rs = await request.query(q);
     return rs;
   } catch (err) {
     console.error(err);
@@ -204,10 +204,82 @@ exports.getDiluentItem = async (Id) => {
   try {
     await sql.connect(dbConfig);
     const request = new sql.Request();
-  
-    const rs = await request.query(q );
+
+    const rs = await request.query(q);
     return rs;
   } catch (err) {
     console.error(err);
   }
 };
+
+exports.getdosageunit = async (condition) => {
+  const q = `
+   SELECT 
+    dbo.ms_dosageunit.DispensedUnitCd, 
+    dbo.ms_dosageunit.DispensedUnitTH,
+    dbo.ms_dosageunit.DispensedUnitEN 
+    FROM 
+    dbo.ms_dosageunit
+    ${condition}
+  `;
+  try {
+    await sql.connect(dbConfig);
+    const request = new sql.Request();
+
+    const rs = await request.query(q);
+    return rs;
+  } catch (err) {
+    console.error(err);
+  }
+};
+exports.getInstructionModel = async (condition) => {
+  const q = `
+    Select  
+    dbo.ms_Instruction.InstructionCd,  
+    dbo.ms_Instruction.InstructionNameTH,  
+    dbo.ms_Instruction.InstructionNameEN,  
+    dbo.ms_Instruction.dose  
+    FROM  
+    dbo.ms_Instruction
+    ${condition}
+  `;
+  try {
+    await sql.connect(dbConfig);
+    const request = new sql.Request();
+
+    const rs = await request.query(q);
+    return rs;
+  } catch (err) {
+    console.error(err);
+  }
+};
+
+exports.getFrequencyModel = async (condition) => {
+  const q = `
+     Select    
+          dbo.ms_frequency_code.frequency_code,    
+          dbo.ms_frequency_code.frequency_nameTH,    
+          dbo.ms_frequency_code.frequency_nameEN,    
+          dbo.ms_frequency_code.qty_per_day,    
+          dbo.ms_frequency_code.frequency_count,    
+          dbo.ms_frequency_code.lastmodify,    
+          dbo.ms_frequency_code.status,    
+          dbo.ms_frequency_code.frequency_onlydays,    
+          dbo.ms_frequency_code.oddday,    
+          dbo.ms_frequency_code.EveryOtherDay,    
+          dbo.ms_frequency_code.qty_per_day2    
+          FROM    
+          dbo.ms_frequency_code   
+    ${condition}
+  `;
+  try {
+    await sql.connect(dbConfig);
+    const request = new sql.Request();
+
+    const rs = await request.query(q);
+    return rs;
+  } catch (err) {
+    console.error(err);
+  }
+};
+

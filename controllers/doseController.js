@@ -70,3 +70,43 @@ exports.getDiluentname = async (req, res) => {
     res.status(400).json(`err : ${err}`);
   }
 };
+
+exports.getDosageUnit = async (req, res) => {
+  const { txtNameUnit } = req.query;
+  try {
+    let condition = "";
+    let rs = "";
+    condition = `WHERE DispensedUnitCd LIKE '${txtNameUnit}%' OR DispensedUnitTH LIKE '${txtNameUnit}%' OR DispensedUnitEN LIKE '${txtNameUnit}%' `;
+    rs = await doseModel.getdosageunit(condition);
+    res.status(200).json(rs);
+  } catch (err) {
+    res.status(400).json("Err : " + err);
+  }
+};
+exports.getInstructionController = async (req, res) => {
+  const { txtInstructionName } = req.query;
+  try {
+    let condition = "";
+    let rs = "";
+    condition = ` WHERE substring(InstructionCd,1,1) in ('${txtInstructionName}')`;
+    condition += ` OR InstructionCd Like '${txtInstructionName}%'`;
+    condition += ` OR InstructionNameTH Like '${txtInstructionName}%' `;
+    condition += ` OR substring(InstructionNameTH,1,1) in ('${txtInstructionName}')`;
+    rs = await doseModel.getInstructionModel(condition);
+    res.status(200).json(rs);
+  } catch (err) {
+    res.status(400).json("Err : " + err);
+  }
+};
+exports.getFrequencyController = async (req, res) => {
+  const { txtFrequencycode } = req.query;
+  try {
+    let condition = "";
+    let rs = "";
+    condition = ` WHERE frequency_code Like '${txtFrequencycode}%'`;
+    rs = await doseModel.getFrequencyModel(condition);
+    res.status(200).json(rs);
+  } catch (err) {
+    res.status(400).json("Err : " + err);
+  }
+};
