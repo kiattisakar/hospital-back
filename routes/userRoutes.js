@@ -1,4 +1,6 @@
 // back/routes/userRoutes.js
+// Path DB ประวัติใช้ยาChemo //  192.168.0.201/data/data/ctx/Data/ctx.dbc
+
 const express = require("express");
 const router = express.Router();
 
@@ -7,7 +9,7 @@ const authenticateJWT = require("../middlewares/authenticateJWT.js");
 const { first, second } = require("../services/first.js");
 // const { second } = require("../services/second.js");
 
-const { room } = require("../services/room");
+const { checkdispens } = require("../services/checkdispens.js");
 const { screen } = require("../services/screen.js");
 const {
   screenstatFinish1,
@@ -111,6 +113,7 @@ router.post("/balancestockHouse", balancestockHouse);
 router.post("/filterStockByDate", filterStockByDate);
 router.post("/Exp", Exp);
 router.get("/test", test);
+router.post("/checkdispens", checkdispens);
 
 // router.post("/Profile/:an", Profile);
 // router.post("/Profile_private", Profile_private);
