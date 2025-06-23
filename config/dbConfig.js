@@ -6,6 +6,7 @@ module.exports = {
   password: process.env.PASSWORD_SUPREAM, // รหัสผ่าน
   server: process.env.SERVER_SUPREAM, // ที่อยู่ของเซิร์ฟเวอร์ SQL Server
   database: process.env.DATABASE_SUPREAM, // ชื่อฐานข้อมูล
+  port: 1433,
   options: {
     encrypt: true, // ต้องการเข้ารหัสข้อมูล
     trustServerCertificate: true, // ยอมรับใบรับรองจากเซิร์ฟเวอร์
