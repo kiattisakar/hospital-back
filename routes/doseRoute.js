@@ -5,8 +5,16 @@ const doseController = require("../controllers/doseController");
 //------------------------หน้า F5 คีย์ยา---------------------------------------------
 router.get("/getDoseBySearch", doseController.getSearch); // ค้นหาชื่อยา ที่หน้าเพิ่มรายการยา [chkKeydrug ,txtorderitemname]
 router.get("/getDiluentname", doseController.getDiluentname); // ค้นหาตัวทำละลาย { txtdiluentname, diluentnameID }
-router.get("/getDoseUnit", doseController.getDosageUnit); // หน่วยของยา และหน่ยอของตัวทำละลาย { txtNameUnit } ใช้ได้ทั้ง
-router.get("/getInstruction", doseController.getInstructionController); // วิธีใช้ยา { txtInstructionName } ใช้ได้ทั้ง
-router.get("/getFrequency", doseController.getFrequencyController); // ความถี่ { txtFrequencycode } ใช้ได้ทั้ง
+router.get("/getDoseUnit", doseController.getDosageUnit); // หน่วยของยา และหน่ยอของตัวทำละลาย { txtNameUnit }
+router.get("/getInstruction", doseController.getInstructionController); // วิธีใช้ยา { txtInstructionName }
+router.get("/getFrequency", doseController.getFrequencyController); // ความถี่ { txtFrequencycode }
+router.get("/getTimeCode", doseController.getTimeCodeController); // เวลา { txttimecode }
+router.get("/getOrderUnit", doseController.getOrderUnitController); // หน่วย { txtOrderUnit }
 
+//------------------------หน้า Setting จัดการข้อมูลยา----------------------------------
+router.get(
+  "/getSearchDoseManager",
+  doseController.getShearchDrugListController
+);
+router.get("/getDrugById",doseController.getDrugByIdController) //ค้นหายาจากรหัส {drugID}
 module.exports = router;

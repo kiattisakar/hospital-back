@@ -110,3 +110,162 @@ exports.getFrequencyController = async (req, res) => {
     res.status(400).json("Err : " + err);
   }
 };
+
+exports.getTimeCodeController = async (req, res) => {
+  const { txttimecode } = req.query;
+  try {
+    let condition = "";
+    let rs = "";
+    condition = ` WHERE timecode Like '${txttimecode}%' OR substring(timecode,1,1) in ('${txttimecode}') OR timeTH Like '${txttimecode}' OR timeEN Like '${txttimecode}%'`;
+    rs = await doseModel.getTimecodeModel(condition);
+    res.status(200).json(rs);
+  } catch (err) {
+    res.status(400).json("Err : " + err);
+  }
+};
+
+exports.getOrderUnitController = async (req, res) => {
+  const { txtOrderUnit } = req.query;
+  try {
+    let condition = "";
+    let rs = "";
+    condition = ` WHERE DispensedTotalUnitCd Like '${txtOrderUnit}%' `;
+    condition += ` OR substring(DispensedTotalUnitTH,1,1) in ('${txtOrderUnit}') `;
+    condition += ` OR DispensedTotalUnitTH Like '${txtOrderUnit}%' `;
+    condition += ` OR DispensedTotalUnitEN Like '${txtOrderUnit}%' `;
+    rs = await doseModel.getOrderUnitModel(condition);
+    res.status(200).json(rs);
+  } catch (err) {
+    res.status(400).json("Err : " + err);
+  }
+};
+
+exports.getShearchDrugListController = async (req, res) => {
+  const { txtSearch, showDataFunc, rdOpen, rdClose } = req.query;
+  try {
+    let condition = "";
+    let rs = "";
+    if (showDataFunc === "2") {
+      condition = showDatamedisup(txtSearch, rdOpen, rdClose);
+    } else if (showDataFunc === "1") {
+      condition = showDatanonmedisup(txtSearch, rdOpen, rdClose);
+    } else {
+      condition = showData(txtSearch, rdOpen, rdClose);
+    }
+    rs = await doseModel.getShearchDrugListModel(condition);
+    res.status(200).json(rs);
+  } catch (err) {
+    res.status(400).json(`Err : ${err}`);
+  }
+};
+function showDatanonmedisup(txtSearch, rdOpen, rdClose) {
+  let condition = "";
+  if (!txtSearch) {
+    if (rdOpen === "true") {
+      condition =
+        "where ISNULL(dbo.ms_drug.medicalsupplies, 0) <> 'Y' And dbo.ms_drug.unused = 'Y'";
+    } else if (rdClose === "true") {
+      condition =
+        "where ISNULL(dbo.ms_drug.medicalsupplies, 0) <> 'Y' And dbo.ms_drug.unused = 'N'";
+    } else {
+      condition = "where ISNULL(dbo.ms_drug.medicalsupplies, 0) <> 'Y'";
+    }
+  } else {
+    if (txtSearch.length > 4) {
+      if (rdOpen === "true") {
+        condition = `where ISNULL(dbo.ms_drug.medicalsupplies, 0) <> 'Y' And dbo.ms_drug.unused = 'Y' And (dbo.ms_drugindex.drugindexname Like '%${txtSearch}%' OR dbo.ms_drug.orderitemcode LIKE '%${txtSearch}%' OR dbo.ms_drug.orderitemTHname LIKE '%${txtSearch}%' OR dbo.ms_drug.orderitemENname LIKE '%${txtSearch}%')`;
+      } else if (rdClose === "true") {
+        condition = `where ISNULL(dbo.ms_drug.medicalsupplies, 0) <> 'Y' And dbo.ms_drug.unused = 'N' And (dbo.ms_drugindex.drugindexname Like '%${txtSearch}%' OR dbo.ms_drug.orderitemcode LIKE '%${txtSearch}%' OR dbo.ms_drug.orderitemTHname LIKE '%${txtSearch}%' OR dbo.ms_drug.orderitemENname LIKE '%${txtSearch}%')`;
+      } else {
+        condition = `where ISNULL(dbo.ms_drug.medicalsupplies, 0) <> 'Y' And (dbo.ms_drugindex.drugindexname Like '%${txtSearch}%' OR dbo.ms_drug.orderitemcode LIKE '%${txtSearch}%' OR dbo.ms_drug.orderitemTHname LIKE '%${txtSearch}%' OR dbo.ms_drug.orderitemENname LIKE '%${txtSearch}%')`;
+      }
+    } else {
+      if (rdOpen === "true") {
+        condition = `where ISNULL(dbo.ms_drug.medicalsupplies, 0) <> 'Y' And dbo.ms_drug.unused = 'Y' And (dbo.ms_drugindex.drugindexname Like '${txtSearch}%' OR dbo.ms_drug.orderitemcode LIKE '${txtSearch}%' OR dbo.ms_drug.orderitemTHname LIKE '${txtSearch}%' OR dbo.ms_drug.orderitemENname LIKE '${txtSearch}%')`;
+      } else if (rdClose === "true") {
+        condition = `where ISNULL(dbo.ms_drug.medicalsupplies, 0) <> 'Y' And dbo.ms_drug.unused = 'N' And (dbo.ms_drugindex.drugindexname Like '${txtSearch}%' OR dbo.ms_drug.orderitemcode LIKE '${txtSearch}%' OR dbo.ms_drug.orderitemTHname LIKE '${txtSearch}%' OR dbo.ms_drug.orderitemENname LIKE '${txtSearch}%')`;
+      } else {
+        condition = `where ISNULL(dbo.ms_drug.medicalsupplies, 0) <> 'Y' And (dbo.ms_drugindex.drugindexname Like '${txtSearch}%' OR dbo.ms_drug.orderitemcode LIKE '${txtSearch}%' OR dbo.ms_drug.orderitemTHname LIKE '${txtSearch}%' OR dbo.ms_drug.orderitemENname LIKE '${txtSearch}%')`;
+      }
+    }
+  }
+  return condition;
+}
+function showData(txtSearch, rdOpen, rdClose) {
+  let condition = "";
+  if (!txtSearch) {
+    if (rdOpen === "true") {
+      condition = "where dbo.ms_drug.unused = 'Y'";
+    } else if (rdClose === "true") {
+      condition = "where dbo.ms_drug.unused = 'N'";
+    } else {
+      condition = "";
+    }
+  } else {
+    if (txtSearch.length > 4) {
+      if (rdOpen === "true") {
+        condition = `where dbo.ms_drug.unused = 'Y' And (dbo.ms_drugindex.drugindexname Like '%${txtSearch}%' OR dbo.ms_drug.orderitemcode LIKE '%${txtSearch}%' OR dbo.ms_drug.orderitemTHname LIKE '%${txtSearch}%' OR dbo.ms_drug.orderitemENname LIKE '%${txtSearch}%')`;
+      } else if (rdClose === "true") {
+        condition = `where dbo.ms_drug.unused = 'N' And (dbo.ms_drugindex.drugindexname Like '%${txtSearch}%' OR dbo.ms_drug.orderitemcode LIKE '%${txtSearch}%' OR dbo.ms_drug.orderitemTHname LIKE '%${txtSearch}%' OR dbo.ms_drug.orderitemENname LIKE '%${txtSearch}%')`;
+      } else {
+        condition = `where dbo.ms_drugindex.drugindexname Like '%${txtSearch}%' OR dbo.ms_drug.orderitemcode LIKE '%${txtSearch}%' OR dbo.ms_drug.orderitemTHname LIKE '%${txtSearch}%' OR dbo.ms_drug.orderitemENname LIKE '%${txtSearch}%')`;
+      }
+    } else {
+      if (rdOpen === "true") {
+        condition = `where dbo.ms_drug.unused = 'Y' And (dbo.ms_drugindex.drugindexname Like '${txtSearch}%' OR dbo.ms_drug.orderitemcode LIKE '${txtSearch}%' OR dbo.ms_drug.orderitemTHname LIKE '${txtSearch}%' OR dbo.ms_drug.orderitemENname LIKE '${txtSearch}%')`;
+      } else if (rdClose === "true") {
+        condition = `where dbo.ms_drug.unused = 'N' And (dbo.ms_drugindex.drugindexname Like '${txtSearch}%' OR dbo.ms_drug.orderitemcode LIKE '${txtSearch}%' OR dbo.ms_drug.orderitemTHname LIKE '${txtSearch}%' OR dbo.ms_drug.orderitemENname LIKE '${txtSearch}%')`;
+      } else {
+        condition = `where dbo.ms_drugindex.drugindexname Like '${txtSearch}%' OR dbo.ms_drug.orderitemcode LIKE '${txtSearch}%' OR dbo.ms_drug.orderitemTHname LIKE '${txtSearch}%' OR dbo.ms_drug.orderitemENname LIKE '${txtSearch}%')`;
+      }
+    }
+  }
+  return condition;
+}
+function showDatamedisup(txtSearch, rdOpen, rdClose) {
+  let condition = "";
+  if (!txtSearch) {
+    if (rdOpen === "true") {
+      condition =
+        "where dbo.ms_drug.medicalsupplies = 'Y' And dbo.ms_drug.unused = 'Y'";
+    } else if (rdClose === "true") {
+      condition =
+        "where dbo.ms_drug.medicalsupplies = 'Y' And dbo.ms_drug.unused = 'N'";
+    } else {
+      console.log(`open = ${rdOpen} ,close = ${rdClose}`);
+      condition = "where dbo.ms_drug.medicalsupplies = 'Y'";
+    }
+  } else {
+    if (txtSearch.length > 4) {
+      if (rdOpen === "true") {
+        condition = `where dbo.ms_drug.medicalsupplies = 'Y' And dbo.ms_drug.unused = 'Y' And (dbo.ms_drugindex.drugindexname Like '%${txtSearch}%' OR dbo.ms_drug.orderitemcode LIKE '%${txtSearch}%' OR dbo.ms_drug.orderitemTHname LIKE '%${txtSearch}%' OR dbo.ms_drug.orderitemENname LIKE '%${txtSearch}%')`;
+      } else if (rdClose === "true") {
+        condition = `where dbo.ms_drug.medicalsupplies = 'Y' And dbo.ms_drug.unused = 'N' And (dbo.ms_drugindex.drugindexname Like '%${txtSearch}%' OR dbo.ms_drug.orderitemcode LIKE '%${txtSearch}%' OR dbo.ms_drug.orderitemTHname LIKE '%${txtSearch}%' OR dbo.ms_drug.orderitemENname LIKE '%${txtSearch}%')`;
+      } else {
+        condition = `where dbo.ms_drug.medicalsupplies = 'Y' And (dbo.ms_drugindex.drugindexname Like '%${txtSearch}%' OR dbo.ms_drug.orderitemcode LIKE '%${txtSearch}%' OR dbo.ms_drug.orderitemTHname LIKE '%${txtSearch}%' OR dbo.ms_drug.orderitemENname LIKE '%${txtSearch}%')`;
+      }
+    } else {
+      if (rdOpen === "true") {
+        condition = `where dbo.ms_drug.medicalsupplies = 'Y' And dbo.ms_drug.unused = 'Y' And (dbo.ms_drugindex.drugindexname Like '${txtSearch}%' OR dbo.ms_drug.orderitemcode LIKE '${txtSearch}%' OR dbo.ms_drug.orderitemTHname LIKE '${txtSearch}%' OR dbo.ms_drug.orderitemENname LIKE '${txtSearch}%')`;
+      } else if (rdClose === "true") {
+        condition = `where dbo.ms_drug.medicalsupplies = 'Y' And dbo.ms_drug.unused = 'N' And (dbo.ms_drugindex.drugindexname Like '${txtSearch}%' OR dbo.ms_drug.orderitemcode LIKE '${txtSearch}%' OR dbo.ms_drug.orderitemTHname LIKE '${txtSearch}%' OR dbo.ms_drug.orderitemENname LIKE '${txtSearch}%')`;
+      } else {
+        condition = `where dbo.ms_drug.medicalsupplies = 'Y' And (dbo.ms_drugindex.drugindexname Like '${txtSearch}%' OR dbo.ms_drug.orderitemcode LIKE '${txtSearch}%' OR dbo.ms_drug.orderitemTHname LIKE '${txtSearch}%' OR dbo.ms_drug.orderitemENname LIKE '${txtSearch}%')`;
+      }
+    }
+  }
+  return condition;
+}
+
+exports.getDrugByIdController = async (req, res) => {
+  const { drugId } = req.query;
+  try {
+    let condition = "";
+    let rs = "";
+    condition = ` WHERE dbo.ms_drug.orderitemcode =  '${drugId}' `;
+    rs = await doseModel.getDrugByIdModel(condition);
+    res.status(200).json(rs['recordsets']);
+  } catch (err) {
+    res.status(400).json("Err : " + err);
+  }
+};
