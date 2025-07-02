@@ -264,7 +264,33 @@ exports.getDrugByIdController = async (req, res) => {
     let rs = "";
     condition = ` WHERE dbo.ms_drug.orderitemcode =  '${drugId}' `;
     rs = await doseModel.getDrugByIdModel(condition);
-    res.status(200).json(rs['recordsets']);
+    res.status(200).json(rs["recordsets"]);
+  } catch (err) {
+    res.status(400).json("Err : " + err);
+  }
+};
+
+exports.dtdosageunit = async (req, res) => {
+  const { txtOrderUnit } = req.query;
+  try {
+    let condition = "";
+    let rs = "";
+    condition = ` WHERE DispensedUnitCd = '${txtOrderUnit}' `;
+
+    rs = await doseModel.getdosageunit(condition);
+    res.status(200).json(rs.recordsets);
+  } catch (err) {
+    res.status(400).json("Err : " + err);
+  }
+};
+exports.dtOrderUnitController = async (req, res) => {
+  const { txtOrderUnit } = req.query;
+  try {
+    let condition = "";
+    let rs = "";
+     condition = ` WHERE DispensedTotalUnitCd = '${txtOrderUnit}' `;
+    rs = await doseModel.getOrderUnitModel(condition);
+    res.status(200).json(rs);
   } catch (err) {
     res.status(400).json("Err : " + err);
   }

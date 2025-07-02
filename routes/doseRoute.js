@@ -11,6 +11,10 @@ router.get("/getFrequency", doseController.getFrequencyController); // ควา
 router.get("/getTimeCode", doseController.getTimeCodeController); // เวลา { txttimecode }
 router.get("/getOrderUnit", doseController.getOrderUnitController); // หน่วย { txtOrderUnit }
 
+//---------------------------API ที่ใช้เยอะในการหาข้อมูลยาจากรหัส---------------------------------------
+router.get("/getUnitByID", doseController.dtdosageunit); // หน่วย { txtOrderUnit }
+router.get("/getOrderUnitByID", doseController.dtOrderUnitController); // หน่วย { txtOrderUnit }
+
 //------------------------หน้า Setting จัดการข้อมูลยา----------------------------------
 router.get(
   "/getSearchDoseManager",
