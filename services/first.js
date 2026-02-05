@@ -69,7 +69,7 @@ async function second(req, res) {
   try {
     await poolConnect;
 
-    const orderdate = new Date().toISOString().split("T")[0]; // แปลงวันที่ปัจจุบันเป็น ISO date string
+    const orderdate = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
 
     // ส่งคำขอไปยัง API แรกเพื่อดึงข้อมูล wardcode
     const firstApiResponse = await axios.post(
@@ -84,7 +84,17 @@ async function second(req, res) {
       return res.status(404).send("Ward not found in the first API data");
     }
 
-    // Query ข้อมูลผู้ป่วยที่ admit ในฐานข้อมูล
+    // สร้างเงื่อนไขตาม ptstatus
+    let ptStatusCondition = "";
+    if (ptstatus === "admit") {
+      ptStatusCondition = " AND dbo.ms_patientadmit.DCdatetime IS NULL";
+    } else if (ptstatus === "discharged") {
+      ptStatusCondition = ` AND dbo.ms_patientadmit.DCdatetime BETWEEN '${orderdate} 00:00:00' AND '${orderdate} 23:59:59'`;
+    } else if (ptstatus === "all") {
+      ptStatusCondition = ` AND (dbo.ms_patientadmit.DCdatetime >= '${orderdate} 00:00:00' OR dbo.ms_patientadmit.DCdatetime IS NULL)`;
+    }
+
+    // Query ข้อมูลผู้ป่วย
     let query = `
             SELECT
                 ms_patientadmit.admitteddate,
@@ -107,8 +117,7 @@ async function second(req, res) {
                     AND prescriptionheader.ordercreatedate = '${orderdate}'
             WHERE
                 dbo.ms_bedmove.status = 0
-                AND (dbo.ms_patientadmit.DCdatetime >= '${orderdate} 00:00:00' OR dbo.ms_patientadmit.DCdatetime IS NULL)
-                AND dbo.ms_patientadmit.DCdatetime IS NULL
+                ${ptStatusCondition}
                 AND ms_ward.wardcode = '${wardcode}'
             GROUP BY
                 ms_patientadmit.admitteddate,
@@ -124,10 +133,8 @@ async function second(req, res) {
                 ms_patientadmit.admitteddate ASC
         `;
 
-    // ส่งคำสั่ง SQL ไปยังฐานข้อมูล
     const result = await pool.request().query(query);
 
-    // จัดรูปแบบข้อมูลที่ได้เพื่อส่งกลับ
     const finalResults = result.recordset.map((record) => ({
       admitteddate: record.admitteddate,
       dischargeddate: record.dischargeddate,
@@ -138,7 +145,6 @@ async function second(req, res) {
       warddesc: record.warddesc,
     }));
 
-    // ส่งข้อมูลกลับไปยังผู้เรียกใช้
     res.status(200).json(finalResults);
   } catch (err) {
     console.error("SQL error", err);

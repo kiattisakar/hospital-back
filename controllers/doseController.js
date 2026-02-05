@@ -288,10 +288,308 @@ exports.dtOrderUnitController = async (req, res) => {
   try {
     let condition = "";
     let rs = "";
-     condition = ` WHERE DispensedTotalUnitCd = '${txtOrderUnit}' `;
+    condition = ` WHERE DispensedTotalUnitCd = '${txtOrderUnit}' `;
     rs = await doseModel.getOrderUnitModel(condition);
     res.status(200).json(rs);
   } catch (err) {
     res.status(400).json("Err : " + err);
+  }
+};
+exports.get_ms_Instruction = async (req, res) => {
+  const { txtSearch } = req.query;
+  try {
+    let condition = "";
+    let rs = "";
+    condition = ` where dbo.ms_Instruction.InstructionCd LIKE '${txtSearch}%' `;
+    rs = await doseModel.get_ms_Instruction(condition);
+    res.status(200).json(rs);
+  } catch (err) {
+    res.status(400).json("Err : " + err);
+  }
+};
+exports.get_ms_frequency_code = async (req, res) => {
+  const { txtSearch } = req.query;
+  try {
+    let condition = "";
+    let rs = "";
+    condition = ` where dbo.ms_frequency_code.frequency_code LIKE '${txtSearch}%' `;
+    rs = await doseModel.get_ms_frequency_code(condition);
+    res.status(200).json(rs);
+  } catch (err) {
+    res.status(400).json("Err : " + err);
+  }
+};
+// exports.get_ms_time_code = async (req, res) => {
+//   const { txtSearch } = req.query;
+//   try {
+//     let condition = "";
+//     let rs = "";
+//     condition = ` where dbo.ms_time.timecode LIKE '${txtSearch}%' OR dbo.ms_time.timeTH LIKE '${txtSearch}%' OR dbo.ms_time.timeEN LIKE '${txtSearch}%' `;
+//     rs = await doseModel.get_ms_time_code(condition);
+//     res.status(200).json(rs);
+//   } catch (err) {
+//     res.status(400).json("Err : " + err);
+//   }
+// };
+exports.get_ms_time_code = async (req, res) => {
+  const { txtSearch, checkboxStatus } = req.query;
+  try {
+    let condition = "";
+    let rs = "";
+
+    // สร้าง condition ตามเงื่อนไข checkbox และ search text
+    if (txtSearch && txtSearch.trim() !== "") {
+      // มีการพิมพ์ค้นหา
+      const searchCondition = `(dbo.ms_time.timecode LIKE '${txtSearch}%' OR dbo.ms_time.timeTH LIKE '${txtSearch}%' OR dbo.ms_time.timeEN LIKE '${txtSearch}%')`;
+
+      if (checkboxStatus === "1") {
+        // เลือกเช็คบอคอันสองและพิมพ์ค้นหา
+        condition = `WHERE dbo.ms_time.timestatus = 1 AND ${searchCondition}`;
+      } else if (checkboxStatus === "0") {
+        // เลือกเช็คบอคอันสามและพิมพ์ค้นหา
+        condition = `WHERE dbo.ms_time.timestatus = 0 AND ${searchCondition}`;
+      } else {
+        // เลือกเช็คบอคอันแรกและพิมพ์ค้นหา (แสดงทั้งหมด)
+        condition = `WHERE ${searchCondition}`;
+      }
+    } else {
+      // ไม่มีการพิมพ์ค้นหา
+      if (checkboxStatus === "1") {
+        // เลือกเช็คบอคอันสองแต่ไม่พิมพ์
+        condition = `WHERE dbo.ms_time.timestatus = 1`;
+      } else if (checkboxStatus === "0") {
+        // เลือกเช็คบอคอันสามแต่ไม่พิมพ์
+        condition = `WHERE dbo.ms_time.timestatus = 0`;
+      } else {
+        // เลือกเช็คบอคอันแรกแต่ไม่พิมพ์ (แสดงทั้งหมด)
+        condition = "";
+      }
+    }
+
+    rs = await doseModel.get_ms_time_code(condition);
+    res.status(200).json(rs);
+  } catch (err) {
+    res.status(400).json("Err : " + err);
+  }
+};
+
+//เดิม
+// exports.get_ms_drug = async (req, res) => {
+//   const { txtSearch } = req.query;
+//   try {
+//     let condition = "";
+
+//     if (txtSearch && txtSearch.trim() !== "") {
+//       // กรณีมีการพิมพ์ search
+//       condition = `
+//         WHERE dbo.ms_drug.unused = 'Y'
+//           AND ISNULL(dbo.ms_drug.medicalsupplies, 0) <> 'Y'
+//           AND (
+//             dbo.ms_drug.orderitemcode LIKE '${txtSearch}%'
+//             OR dbo.ms_drug.orderitemENname LIKE '${txtSearch}%'
+//           )
+//       `;
+//     } else {
+//       // กรณีไม่ได้พิมพ์ search
+//       condition = `
+//         WHERE dbo.ms_drug.unused = 'Y'
+//           AND ISNULL(dbo.ms_drug.medicalsupplies, 0) <> 'Y'
+//       `;
+//     }
+
+//     const rs = await doseModel.get_ms_drug(condition);
+//     res.status(200).json(rs);
+//   } catch (err) {
+//     res.status(400).json("Err : " + err);
+//   }
+// };
+
+exports.get_ms_drug = async (req, res) => {
+  const { txtSearch } = req.query;
+  try {
+    let condition = "";
+
+    if (!txtSearch || txtSearch.trim() === "") {
+      condition = `
+        WHERE unused <> 'N' 
+          AND ISNULL(dbo.ms_drug.medicalsupplies, 0) <> 'Y'
+      `;
+    } else {
+      if (txtSearch.length > 4) {
+        condition = `
+          WHERE (orderitemcode LIKE '%${txtSearch}%' 
+                 OR orderitemENname LIKE '%${txtSearch}%') 
+            AND unused <> 'N' 
+            AND ISNULL(dbo.ms_drug.medicalsupplies, 0) <> 'Y'
+        `;
+      } else {
+        condition = `
+          WHERE (orderitemcode LIKE '${txtSearch}%' 
+                 OR orderitemENname LIKE '${txtSearch}%') 
+            AND unused <> 'N' 
+            AND ISNULL(dbo.ms_drug.medicalsupplies, 0) <> 'Y'
+        `;
+      }
+    }
+
+    const rs = await doseModel.get_ms_drug(condition);
+
+    // ตอนนี้ rs คือ array ของ object แล้ว
+    res.status(200).json(rs);
+  } catch (err) {
+    console.error(err);
+    res.status(400).json({ error: "Err : " + err });
+  }
+};
+
+exports.get_ms_druginteraction = async (req, res) => {
+  const { txtSearch } = req.query;
+  try {
+    let condition = "";
+
+    // ถ้ามี txtSearch และไม่ใช่ค่าว่าง
+    if (txtSearch && txtSearch.trim() !== "") {
+      condition = ` WHERE dbo.ms_druginteraction.drugnameindex1 LIKE '${txtSearch}%' 
+                 OR dbo.ms_druginteraction.drugnameindex2 LIKE '${txtSearch}%' `;
+    }
+
+    const rs = await doseModel.get_ms_druginteraction(condition);
+    res.status(200).json(rs);
+  } catch (err) {
+    res.status(400).json("Err : " + err);
+  }
+};
+
+exports.get_ms_dosageunit = async (req, res) => {
+  const { txtSearch } = req.query;
+  try {
+    let condition = "";
+
+    // ถ้ามี txtSearch และไม่ใช่ค่าว่าง
+    if (txtSearch && txtSearch.trim() !== "") {
+      condition = ` where dbo.ms_dosageunit.DispensedUnitTH LIKE '%${txtSearch}%' OR dbo.ms_dosageunit.DispensedUnitEN LIKE '%${txtSearch}%' `;
+    }
+
+    const rs = await doseModel.get_ms_dosageunit(condition);
+    res.status(200).json(rs);
+  } catch (err) {
+    res.status(400).json("Err : " + err);
+  }
+};
+
+exports.get_ms_orderunit = async (req, res) => {
+  const { txtSearch } = req.query;
+  try {
+    let condition = "";
+
+    // ถ้ามี txtSearch และไม่ใช่ค่าว่าง
+    if (txtSearch && txtSearch.trim() !== "") {
+      condition = ` where dbo.ms_orderunit.DispensedTotalUnitTH LIKE '%${txtSearch}%' OR dbo.ms_orderunit.DispensedTotalUnitEN LIKE '%${txtSearch}%' `;
+    }
+    const rs = await doseModel.get_ms_orderunit(condition);
+    res.status(200).json(rs);
+  } catch (err) {
+    res.status(400).json("Err : " + err);
+  }
+};
+
+exports.show_Searchdrug = async (req, res) => {
+  const { txtSearch } = req.query;
+  try {
+    let condition = "";
+
+    if (!txtSearch || txtSearch.trim() === "") {
+      condition = `
+        WHERE dbo.ms_drug.unused = 'Y' 
+        AND ISNULL(dbo.ms_drug.medicalsupplies, 0) <> 'Y'
+      `;
+    } else {
+      if (txtSearch.length > 4) {
+        condition = `
+          WHERE dbo.ms_drug.unused = 'Y' 
+          AND ISNULL(dbo.ms_drug.medicalsupplies, 0) <> 'Y'
+          AND (
+            dbo.ms_drugindex.drugindexname LIKE '%${txtSearch}%'
+            OR dbo.ms_drug.orderitemcode LIKE '%${txtSearch}%'
+            OR dbo.ms_drug.orderitemENname LIKE '%${txtSearch}%'
+          )
+        `;
+      } else {
+        condition = `
+          WHERE dbo.ms_drug.unused = 'Y' 
+          AND ISNULL(dbo.ms_drug.medicalsupplies, 0) <> 'Y'
+          AND (
+            dbo.ms_drugindex.drugindexname LIKE '${txtSearch}%'
+            OR dbo.ms_drug.orderitemcode LIKE '${txtSearch}%'
+            OR dbo.ms_drug.orderitemENname LIKE '${txtSearch}%'
+          )
+        `;
+      }
+    }
+
+    const rs = await doseModel.show_Searchdrug(condition);
+    res.status(200).json(rs);
+  } catch (err) {
+    res.status(400).json("Err : " + err);
+  }
+};
+
+exports.get_ms_allergygroup = async (req, res) => {
+  const { txtSearch } = req.query;
+  try {
+    let condition = "";
+
+    if (txtSearch && txtSearch.trim() !== "") {
+      condition = ` WHERE ms_allergygroup.AllergyGroupNm LIKE '%${txtSearch}%' `;
+    }
+
+    const rs = await doseModel.get_ms_allergygroup(condition);
+
+    // rs ตอนนี้คือ array ของ object อยู่แล้ว
+    res.status(200).json(rs);
+  } catch (err) {
+    res.status(400).json({ error: "Err : " + err });
+  }
+};
+
+exports.show_ms_approvetype = async (req, res) => {
+  const { txtSearch } = req.query;
+  try {
+    let condition = "";
+
+    if (txtSearch && txtSearch.trim() !== "") {
+      if (txtSearch.length > 4) {
+        condition = ` WHERE approvetypecode LIKE '%${txtSearch}%' OR approvetypedetail LIKE '%${txtSearch}%' `;
+      } else {
+        condition = ` WHERE approvetypecode LIKE '${txtSearch}%' OR approvetypedetail LIKE '${txtSearch}%' `;
+      }
+    }
+
+    const rs = await doseModel.show_ms_approvetype(condition);
+
+    res.status(200).json(rs); // ส่งออกเป็น array ของ object
+  } catch (err) {
+    res.status(400).json({ error: "Err : " + err });
+  }
+};
+
+exports.get_drugname = async (req, res) => {
+  const { txtSearch } = req.query;
+  try {
+    let condition = "";
+
+    if (txtSearch && txtSearch.trim() !== "") {
+      if (txtSearch.length > 4) {
+        condition = ` Where DrugName1 LIKE '%${txtSearch}%' Or mc_id LIKE '%${txtSearch}%' Or Sum_MCID LIKE '%${txtSearch}%' `;
+      } else {
+        condition = ` Where DrugName1 LIKE '${txtSearch}%' OR mc_id LIKE '${txtSearch}%' OR Sum_MCID LIKE '${txtSearch}%' `;
+      }
+    }
+
+    const rs = await doseModel.get_drugname(condition);
+
+    res.status(200).json(rs); // ส่งออกเป็น array ของ object
+  } catch (err) {
+    res.status(400).json({ error: "Err : " + err });
   }
 };

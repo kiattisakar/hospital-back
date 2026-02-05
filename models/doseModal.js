@@ -514,3 +514,355 @@ exports.getDrugByIdModel = async (condition) => {
     console.error(err);
   }
 };
+
+exports.get_ms_Instruction = async (condition) => {
+  const q = `
+   Select
+        ROW_NUMBER() OVER(ORDER BY dbo.ms_Instruction.InstructionNameTH ASC) As Row#,
+        dbo.ms_Instruction.InstructionCd,
+        dbo.ms_Instruction.InstructionNameTH,
+        dbo.ms_Instruction.InstructionNameEN,
+        ISNULL(dbo.ms_Instruction.status,'N') As status,
+        ISNULL(dbo.ms_Instruction.sendmix,'N') As sendmix,
+        dbo.ms_Instruction.dose,
+        dbo.ms_Instruction.InstructionNameMix
+        FROM
+        dbo.ms_Instruction
+  ${condition}
+`;
+  try {
+    await sql.connect(dbConfig);
+    const request = new sql.Request();
+
+    const rs = await request.query(q);
+    return rs;
+  } catch (err) {
+    console.error(err);
+  }
+};
+
+exports.get_ms_frequency_code = async (condition) => {
+  const q = `
+ Select
+         dbo.ms_frequency_code.frequency_code, 
+         dbo.ms_frequency_code.frequency_nameTH, 
+         dbo.ms_frequency_code.frequency_nameEN, 
+         dbo.ms_frequency_code.qty_per_day, 
+         dbo.ms_frequency_code.qty_per_day2, 
+         dbo.ms_frequency_code.EveryOtherDay, 
+         dbo.ms_frequency_code.frequency_count, 
+         dbo.ms_frequency_code.frequency_onlydays,
+         dbo.ms_frequency_code.status
+         FROM 
+         dbo.ms_frequency_code 
+  ${condition}
+`;
+  try {
+    await sql.connect(dbConfig);
+    const request = new sql.Request();
+
+    const rs = await request.query(q);
+    return rs;
+  } catch (err) {
+    console.error(err);
+  }
+};
+
+exports.get_ms_time_code = async (condition) => {
+  const q = `
+ Select 
+        ROW_NUMBER() OVER(ORDER BY dbo.ms_time.timecode ASC) As Row#, 
+        dbo.ms_time.timecode, 
+        dbo.ms_time.timeTH, 
+        dbo.ms_time.timeEN, 
+        dbo.ms_time.timecount, 
+        dbo.ms_time.timetype, 
+        dbo.ms_time.timedose, 
+        isnull(dbo.ms_time.status,'N') AS status, 
+        dbo.ms_time.lastupdate 
+        FROM 
+        dbo.ms_time  
+  ${condition}
+`;
+  try {
+    await sql.connect(dbConfig);
+    const request = new sql.Request();
+
+    const rs = await request.query(q);
+    return rs;
+  } catch (err) {
+    console.error(err);
+  }
+};
+exports.get_ms_drug = async (condition) => {
+  const q = `
+    SELECT TOP 100
+      ROW_NUMBER() OVER(ORDER BY dbo.ms_drug.orderitemcode ASC) AS RowNum, 
+      dbo.ms_drug.orderitemcode, 
+      dbo.ms_drug.orderitemENname 
+    FROM ms_drug 
+    ${condition}
+  `;
+  try {
+    await sql.connect(dbConfig);
+    const request = new sql.Request();
+    const rs = await request.query(q);
+
+    // ส่ง array ของ object ออกมาเลย
+    return rs.recordset;
+  } catch (err) {
+    console.error(err);
+    return [];
+  }
+};
+
+exports.get_ms_druginteraction = async (condition) => {
+  const q = `
+Select
+        ROW_NUMBER() OVER(ORDER BY dbo.ms_druginteraction.DDIcode ASC) As Row#, 
+        dbo.ms_druginteraction.DDIcode, 
+        dbo.ms_druginteraction.drugnameindex1, 
+        dbo.ms_druginteraction.drugnameindex2, 
+        dbo.ms_druginteraction.dlevel, 
+        dbo.ms_druginteraction.onset, 
+        dbo.ms_druginteraction.severity, 
+        dbo.ms_druginteraction.document, 
+        dbo.ms_druginteraction.adverbs1, 
+        dbo.ms_druginteraction.adverbs2, 
+        dbo.ms_druginteraction.adverbs3, 
+        dbo.ms_druginteraction.memo, 
+        dbo.ms_druginteraction.effect_memo, 
+        dbo.ms_druginteraction.machanism_memo, 
+        dbo.ms_druginteraction.management_memo, 
+        dbo.ms_druginteraction.monitoring
+        FROM 
+        dbo.ms_druginteraction 
+        ${condition}
+`;
+  try {
+    await sql.connect(dbConfig);
+    const request = new sql.Request();
+
+    const rs = await request.query(q);
+    return rs;
+  } catch (err) {
+    console.error(err);
+  }
+};
+
+exports.get_ms_dosageunit = async (condition) => {
+  const q = `
+Select 
+        ROW_NUMBER() OVER(ORDER BY DispensedUnitTH ASC) As Row#, 
+        dbo.ms_dosageunit.DispensedUnitCd, 
+        dbo.ms_dosageunit.DispensedUnitTH, 
+        dbo.ms_dosageunit.DispensedUnitEN 
+        FROM 
+        dbo.ms_dosageunit 
+       ${condition}
+`;
+  try {
+    await sql.connect(dbConfig);
+    const request = new sql.Request();
+
+    const rs = await request.query(q);
+    return rs;
+  } catch (err) {
+    console.error(err);
+  }
+};
+
+exports.get_ms_orderunit = async (condition) => {
+  const q = `
+Select
+        ROW_NUMBER() OVER(ORDER BY DispensedTotalUnitTH ASC) As Row#,
+        dbo.ms_orderunit.DispensedTotalUnitCd,
+        dbo.ms_orderunit.DispensedTotalUnitTH,
+        dbo.ms_orderunit.DispensedTotalUnitEN
+        FROM
+        dbo.ms_orderunit
+       ${condition}
+`;
+  try {
+    await sql.connect(dbConfig);
+    const request = new sql.Request();
+
+    const rs = await request.query(q);
+    return rs;
+  } catch (err) {
+    console.error(err);
+  }
+};
+
+exports.show_Searchdrug = async (condition) => {
+  const q = `
+        Select TOP 100
+        dbo.ms_drug.orderitemcode,
+        dbo.ms_drug.orderitemTHname,
+        dbo.ms_drug.orderitemENname,
+        dbo.ms_drug.genericname
+        FROM
+        dbo.ms_drug
+        LEFT JOIN dbo.ms_drugindex On 
+        dbo.ms_drug.orderitemcode = dbo.ms_drugindex.orderitemcode
+        ${condition}
+        GROUP BY 
+        dbo.ms_drug.orderitemcode, 
+        dbo.ms_drug.orderitemTHname, 
+        dbo.ms_drug.orderitemENname, 
+        dbo.ms_drug.genericname 
+`;
+  try {
+    await sql.connect(dbConfig);
+    const request = new sql.Request();
+
+    const rs = await request.query(q);
+    return rs;
+  } catch (err) {
+    console.error(err);
+  }
+};
+
+// ไม่ได้ใช้ doseController.js
+exports.show_SearchDrugUsage = async (req, res) => {
+  const { txtSearch } = req.query;
+  try {
+    let condition = " '%%' "; // default ถ้าไม่ใส่ search
+
+    if (txtSearch && txtSearch.trim() !== "") {
+      condition = `'%${txtSearch}%'`;
+    }
+
+    const q = `
+SELECT 
+        dbo.ms_mapdrugusage.drugusagecode,
+        dbo.ms_mapdrugusage.drugusagedesc,
+        ISNULL(dbo.ms_Instruction.InstructionNameTH,'') 
+        +' '+ CONVERT(VARCHAR(10),CONVERT(FLOAT,ISNULL(dbo.ms_mapdrugusage.dispensedose_ipd,0))) 
+        + ' ' + ISNULL(dbo.ms_dosageunit.DispensedUnitTH,'') 
+        + ' ' + ISNULL(dbo.ms_frequency_code.frequency_nameTH,'') 
+        +' '+ ISNULL(dbo.ms_time.timeTH,'') As drugusagedetail,
+        dbo.ms_mapdrugusage.instructioncode_ipd, 
+        ISNULL(dbo.ms_mapdrugusage.dispensedose_ipd, 0) As dispensedose_ipd, 
+        dbo.ms_mapdrugusage.dosageunitcode_ipd, 
+        dbo.ms_mapdrugusage.frequencycode_ipd, 
+        dbo.ms_mapdrugusage.timecode_ipd, 
+        dbo.ms_mapdrugusage.instructioncode_opd, 
+        ISNULL(dbo.ms_mapdrugusage.dispensedose_opd, 0) As dispensedose_opd, 
+        dbo.ms_mapdrugusage.dosageunitcode_opd, 
+        dbo.ms_mapdrugusage.frequencycode_opd, 
+        dbo.ms_mapdrugusage.timecode_opd, 
+        ISNULL(dbo.ms_mapdrugusage.prioritydrugusage, 0) As prioritydrugusage
+        FROM
+        dbo.ms_mapdrugusage
+        Left Join dbo.ms_Instruction ON dbo.ms_mapdrugusage.instructioncode_ipd = dbo.ms_Instruction.InstructionCd 
+        Left Join dbo.ms_dosageunit On dbo.ms_mapdrugusage.dosageunitcode_ipd = dbo.ms_dosageunit.DispensedUnitCd 
+        Left Join dbo.ms_frequency_code ON dbo.ms_mapdrugusage.frequencycode_ipd = dbo.ms_frequency_code.frequency_code 
+        Left Join dbo.ms_time On dbo.ms_mapdrugusage.timecode_ipd = dbo.ms_time.timecode 
+        WHERE 
+        dbo.ms_mapdrugusage.drugusagedesc Like ${condition}
+        AND dbo.ms_mapdrugusage.status = 'Y' 
+    `;
+
+    await sql.connect(dbConfig);
+    const request = new sql.Request();
+    const rs = await request.query(q);
+
+    res.status(200).json(rs.recordset);
+  } catch (err) {
+    console.error(err);
+    res.status(400).json({ error: err.message });
+  }
+};
+
+// exports.get_ms_allergygroup = async (condition) => {
+//   const q = `
+// Select
+//         ROW_NUMBER() OVER(ORDER BY ms_allergygroup.AllergyGroupCd ASC) As Row# ,
+//         ms_allergygroup.AllergyGroupCd,
+//         ms_allergygroup.AllergyGroupNm,
+//         ms_allergygroup.Notification,
+//         ms_allergygroup.NotOrder
+//         FROM
+//         ms_allergygroup
+//         ${condition}
+// `;
+//   try {
+//     await sql.connect(dbConfig);
+//     const request = new sql.Request();
+
+//     const rs = await request.query(q);
+//     return rs;
+//   } catch (err) {
+//     console.error(err);
+//   }
+// };
+exports.get_ms_allergygroup = async (condition) => {
+  const q = `
+    SELECT 
+        ROW_NUMBER() OVER(ORDER BY ms_allergygroup.AllergyGroupCd ASC) AS RowNum, 
+        ms_allergygroup.AllergyGroupCd, 
+        ms_allergygroup.AllergyGroupNm, 
+        ms_allergygroup.Notification, 
+        ms_allergygroup.NotOrder
+    FROM ms_allergygroup
+    ${condition}
+  `;
+  try {
+    await sql.connect(dbConfig);
+    const request = new sql.Request();
+    const rs = await request.query(q);
+
+    // ส่งเฉพาะ array ของ object
+    return rs.recordset;
+  } catch (err) {
+    console.error(err);
+    return []; // ส่ง array ว่างกรณี error
+  }
+};
+
+exports.show_ms_approvetype = async (condition) => {
+  const q = `
+    Select
+        approvetypecode,
+        approvetypedetail
+        from ms_approvetype
+        ${condition}
+        ORDER BY LEN(approvetypecode) ASC, approvetypecode ASC
+  `;
+  try {
+    await sql.connect(dbConfig);
+    const request = new sql.Request();
+    const rs = await request.query(q);
+
+    // ส่งเฉพาะ array ของ object
+    return rs.recordset;
+  } catch (err) {
+    console.error(err);
+    return []; // ส่ง array ว่างกรณี error
+  }
+};
+
+exports.get_drugname = async (condition) => {
+  const q = `
+  Select 
+        mc_id, 
+        Sum_MCID, 
+        Sum_MCID_bak, 
+        DrugName1 
+        FROM drugname 
+        ${condition}
+        Order By mc_id ASC
+  `;
+  try {
+    await sql.connect(dbConfig);
+    const request = new sql.Request();
+    const rs = await request.query(q);
+
+    // ส่งเฉพาะ array ของ object
+    return rs.recordset;
+  } catch (err) {
+    console.error(err);
+    return []; // ส่ง array ว่างกรณี error
+  }
+};

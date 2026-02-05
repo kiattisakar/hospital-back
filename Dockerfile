@@ -20,24 +20,18 @@
 # CMD ["node", "index.js"]
 
 
-# ///
-
-# ใช้ node เป็น base image
+# backend/Dockerfile
 FROM node:18-alpine
 
 WORKDIR /app
 
-# คัดลอก package.json และติดตั้ง dependencies
 COPY package*.json ./
-RUN npm install
+RUN npm ci --only=production
 
-# คัดลอกโค้ด backend ทั้งหมด
 COPY . .
 
-# เปิดพอร์ต (สมมุติใช้ 3000)
 EXPOSE 3000
 
-# สั่งรันเซิร์ฟเวอร์
 CMD ["node", "index.js"]
 
 

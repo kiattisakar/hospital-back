@@ -37,6 +37,9 @@ const {
 const { test } = require("../services/dockertest.js");
 
 const { medIPD } = require("../services/medicationProfile/med.js"); // IPD IV TPN Chemo
+const {
+  createMedIPD,
+} = require("../services/medicationProfile/createMedIPD.js"); // IPD IV TPN Chemo
 
 // const { medIV } = require("../services/medicationProfile/iv.js");
 
@@ -121,6 +124,7 @@ router.post("/checkdispens", checkdispens);
 router.post("/btnsearch", btnsearch);
 
 router.post("/medIPD", medIPD); // ข้อมูลส่วนของ L M C T V
+// router.post("/createMedIPD", createMedIPD);
 // router.post("/medIV", medIV); // ข้อมูลส่วนของ L M C T V
 
 router.post("/labResult", labResult);
